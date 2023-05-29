@@ -7,11 +7,20 @@ def Dense(input, units, activation='relu'):
 def Flatten(input):
     return tf.keras.layers.Flatten()(input)
 
-def Conv(input, filter, kernel_size, stride=1, padding='same', activation=tf.nn.swish):
+def Conv(input, filter, kernel_size, stride=1, groups=1, padding='same', activation=tf.nn.swish):
   x = tf.keras.layers.Conv2D(filter, kernel_size, padding=padding, strides=stride,
-                            use_bias=False, activation=activation)(input)
+                             groups=groups, use_bias=False, activation=activation)(input)
   x = tf.keras.layers.BatchNormalization()(x)
   return x
+
+def GhostConv(input, filter, kernel_size=1, stride=1, ratio=2, dw_size=3, act='relu'):
+  init_channel = (filter // ratio) + 1
+  new_channel = init_channel * (ratio-1)
+  primary_conv = Conv(input, init_channel, kernel_size, stride, activation=act)
+  cheap_operation = Conv(primary_conv, new_channel, dw_size, 1, groups=init_channel, activation=act)
+  out = Concat([primary_conv, cheap_operation])
+  return out[:,:,:,:filter]
+  # return out
 
 def Concat(list_layer, axis=-1):
   return tf.keras.layers.Concatenate(axis=axis)(list_layer)
