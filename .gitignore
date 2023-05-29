@@ -1,0 +1,6 @@
+resized_dataset/*
+*.npy
+__pycache__/*
+np_data/*
+savedmodel/*
+*.h5
