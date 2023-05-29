@@ -21,7 +21,7 @@ print(f"x_valid shape: {x_valid.shape}")
 print(f"y_valid shape: {y_valid.shape}")
 
 Input = tf.keras.layers.Input(shape=x_train.shape[1:])
-layers = models.build_model(input_layers=Input)
+layers = models.build_mondi_model(input_layers=Input)
 
 model = tf.keras.models.Model(Input, layers[-1])
 
@@ -33,11 +33,11 @@ model.compile(optimizer='adam',
               metrics=['mae', rmse_metrics, metrics.R_squared])
 
 # print(model.summary())
-saved_best_ckpt = cb.best_ckpt("fullyconnected")
+saved_best_ckpt = cb.best_ckpt("mondi_autoencoder")
 
 history = model.fit(x_train, y_train, batch_size=16, epochs=500,
                     validation_data=(x_valid, y_valid),
                     callbacks=[cb.early_stopping, saved_best_ckpt])
 
 metrics.dict_to_json(history.history, file_name="fc")
-model.save('fc_mondi_regression.h5')
+model.save('autoencoder_mondi_regression.h5')
