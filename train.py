@@ -33,11 +33,11 @@ model.compile(optimizer='adam',
               metrics=['mae', rmse_metrics, metrics.R_squared])
 
 # print(model.summary())
-saved_best_ckpt = cb.best_ckpt("mondi_autoencoder")
+saved_best_ckpt = cb.best_ckpt("mondi_cnn")
 
 history = model.fit(x_train, y_train, batch_size=16, epochs=500,
                     validation_data=(x_valid, y_valid),
                     callbacks=[cb.early_stopping, saved_best_ckpt])
 
-metrics.dict_to_json(history.history, file_name="fc")
-model.save('autoencoder_mondi_regression.h5')
+metrics.dict_to_json(history.history, file_name="cnn_mondi")
+model.save('cnn_mondi_regression.h5')
