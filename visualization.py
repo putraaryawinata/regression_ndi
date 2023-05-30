@@ -4,11 +4,11 @@ plt.rcParams["figure.figsize"] = (20, 5)
 import json
  
 # Opening JSON file
-with open('savedhistory/autoencoder.json') as json_file:
+with open('savedhistory/autoencoder_mondi.json') as json_file:
     autoencoder = json.load(json_file)
-with open('savedhistory/cnn.json') as json_file:
+with open('savedhistory/cnn_mondi.json') as json_file:
     cnn = json.load(json_file)
-with open('savedhistory/fc.json') as json_file:
+with open('savedhistory/fc_mondi.json') as json_file:
     fc = json.load(json_file)
 
 def plotting(metrics, path_dir='savedhistory', hist_dict=[autoencoder, cnn, fc]):
@@ -21,5 +21,5 @@ def plotting(metrics, path_dir='savedhistory', hist_dict=[autoencoder, cnn, fc])
 
 metrics_list = ['root_mean_squared_error', 'mae', 'R_squared', 'val_root_mean_squared_error', 'val_mae', 'val_R_squared']
 for metric in metrics_list:
-    plotting(metric)
+    plotting(metric, path_dir='savedhistory/mondi')
     print(f"{metric} have been plotted!")
