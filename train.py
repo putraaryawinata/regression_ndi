@@ -32,7 +32,7 @@ model.compile(optimizer='adam',
               loss = 'mse',
               metrics=['mae', rmse_metrics, metrics.R_squared])
 
-# print(model.summary())
+print(model.summary())
 saved_best_ckpt = cb.best_ckpt("mondi_cnn")
 
 history = model.fit(x_train, y_train, batch_size=16, epochs=500,

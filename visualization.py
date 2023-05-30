@@ -12,9 +12,9 @@ with open('savedhistory/fc.json') as json_file:
     fc = json.load(json_file)
 
 def plotting(metrics, path_dir='savedhistory', hist_dict=[autoencoder, cnn, fc]):
-    plt.plot(autoencoder[metrics], label='fc')
+    plt.plot(autoencoder[metrics], label='autoencoder')
     plt.plot(cnn[metrics], label='cnn')
-    plt.plot(fc[metrics], label='autoencoder')
+    plt.plot(fc[metrics], label='fc')
     plt.legend()
     plt.savefig(f'{path_dir}/{metrics}.png', dpi=300)
     plt.close()
