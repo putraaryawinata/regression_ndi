@@ -41,8 +41,8 @@ def spatial_attention_module(input, kernel_size=7):
   avgpool = tf.keras.layers.GlobalAveragePooling2D()(input)
   maxpool = tf.keras.layers.GlobalMaxPooling2D()(input)
   x = Concat([avgpool, maxpool])
-  x = tf.expand_dims(x, axis=1)
-  x = tf.expand_dims(x, axis=1)
+  # x = tf.expand_dims(x, axis=1)
+  # x = tf.expand_dims(x, axis=1)
   x = tf.keras.layers.Conv2D(1, padding='same', use_bias=False,
                              kernel_size=kernel_size,
                              activation='sigmoid')(x)
