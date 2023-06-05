@@ -22,6 +22,33 @@ def GhostConv(input, filter, kernel_size=1, stride=1, ratio=2, dw_size=3, act='r
   return out[:,:,:,:filter]
   # return out
 
+def channel_attention_module(input, filter, ratio=8):
+  avgpool = tf.keras.layers.GlobalAveragePooling2D()(input)
+  maxpool = tf.keras.layers.GlobalMaxPooling2D()(input)
+  
+  mlp1 = tf.keras.layers.Dense(filter//ratio, activation='relu')(avgpool)
+  mlp1 = tf.keras.layers.Dense(filter)(mlp1)
+
+  mlp2 = tf.keras.layers.Dense(filter//ratio, activation='relu')(maxpool)
+  mlp2 = tf.keras.layers.Dense(filter)(mlp2)
+
+  mlp = tf.keras.layers.Add()([mlp1, mlp2])
+  return tf.keras.layers.Multiply()([input, mlp])
+
+def spatial_attention_module(input, kernel_size=7):
+  avgpool = tf.keras.layers.GlobalAveragePooling2D()(input)
+  maxpool = tf.keras.layers.GlobalMaxPooling2D()(input)
+  x = Concat([avgpool, maxpool])
+  x = tf.keras.layers.Conv2D(1, kernel_size=kernel_size,
+                             padding='same', use_bias=False,
+                             activation='sigmoid')(x)
+  return tf.keras.layers.Multiply()([input, x])
+
+def CBAM(input, filter):
+  cam = channel_attention_module(input, filter=filter)
+  sam = spatial_attention_module(cam)
+  return sam
+
 def Concat(list_layer, axis=-1):
   return tf.keras.layers.Concatenate(axis=axis)(list_layer)
 
