@@ -23,8 +23,8 @@ def GhostConv(input, filter, kernel_size=1, stride=1, ratio=2, dw_size=3, act='r
   # return out
 
 def channel_attention_module(input, filter, ratio=8):
-  avgpool = tf.keras.layers.GlobalAveragePooling2D()(input)
-  maxpool = tf.keras.layers.GlobalMaxPooling2D()(input)
+  avgpool = tf.keras.layers.GlobalAvgPool2D()(input)
+  maxpool = tf.keras.layers.GlobalMaxPool2D()(input)
   
   mlp1 = tf.keras.layers.Dense(filter//ratio, activation='relu')(avgpool)
   mlp1 = tf.keras.layers.Dense(filter)(mlp1)
@@ -33,17 +33,21 @@ def channel_attention_module(input, filter, ratio=8):
   mlp2 = tf.keras.layers.Dense(filter)(mlp2)
 
   mlp = tf.keras.layers.Add()([mlp1, mlp2])
-  mlp = tf.expand_dims(mlp, axis=0)
-  mlp = tf.expand_dims(mlp, axis=0)
-  return input * mlp
+  mlp = tf.keras.layers.Reshape((1, 1, filter))(mlp)
+  # mlp = tf.keras.layers.Concatenate()([mlp, mlp])
+  return input * mlp # tf.keras.layers.Multiply()([input, mlp])
 
 def spatial_attention_module(input, kernel_size=7):
   avgpool = tf.keras.layers.GlobalAveragePooling2D()(input)
   maxpool = tf.keras.layers.GlobalMaxPooling2D()(input)
   x = Concat([avgpool, maxpool])
-  x = tf.keras.layers.Conv2D(1, kernel_size=kernel_size,
-                             padding='same', use_bias=False,
+  x = tf.expand_dims(x, axis=1)
+  x = tf.expand_dims(x, axis=1)
+  x = tf.keras.layers.Conv2D(1, padding='same', use_bias=False,
+                             kernel_size=kernel_size,
                              activation='sigmoid')(x)
+  # x = tf.keras.layers.Concatenate()([x, x])
+  
   return tf.keras.layers.Multiply()([input, x])
 
 def CBAM(input, filter):

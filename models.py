@@ -187,7 +187,7 @@ def build_mondi_model(input_layers, num_classes=13):
   la(x, md.Concat([x[-1], x[-3], x[-5], x[-6]]))
   la(x, md.GhostConv(x[-1], 512, 1, 1)) # 25
 
-  la(x, md.CBAM(x[-1], 256))
+  la(x, md.CBAM(x[-1], 512))
 
   la(x, md.MP(x[-1]))
   la(x, md.GhostConv(x[-1], 256, 1, 1))
@@ -203,7 +203,7 @@ def build_mondi_model(input_layers, num_classes=13):
   la(x, md.Concat([x[-1], x[-3], x[-5], x[-6]]))
   la(x, md.GhostConv(x[-1], 1024, 1, 1)) # 39
 
-  la(x, md.CBAM(x[-1], 256))
+  la(x, md.CBAM(x[-1], 1024))
 
   la(x, md.MP(x[-1]))  #  [-1, 1, MP, []],
   la(x, md.GhostConv(x[-1], 512, 1, 1))
