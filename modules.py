@@ -33,6 +33,8 @@ def channel_attention_module(input, filter, ratio=8):
   mlp2 = tf.keras.layers.Dense(filter)(mlp2)
 
   mlp = tf.keras.layers.Add()([mlp1, mlp2])
+  mlp = tf.expand_dims(mlp)
+  mlp = tf.expand_dims(mlp)
   return input * mlp
 
 def spatial_attention_module(input, kernel_size=7):
