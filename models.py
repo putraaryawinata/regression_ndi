@@ -145,11 +145,11 @@ def build_yolov7_model(input_layers, num_classes=13):
 
     #  [[102,103,104], 1, IDetect, [nc, anchors]],   # Detect(P3, P4, P5)
   # regression part
-  la(x, md.RegFC(x[75]))
+  la(x, md.RegFC(input_layers))
 
-  # la(x, md.RegFlat(x[50]))
+  # la(x, md.RegFC(x[50]))
   
-  # la(x, md.RegFlat(x[75]))
+  # la(x, md.RegFC(x[75]))
 
   return x
 
@@ -289,10 +289,10 @@ def build_mondi_model(input_layers, num_classes=13):
 
     #  [[102,103,104], 1, IDetect, [nc, anchors]],   # Detect(P3, P4, P5)
   # regression part
-  # la(x, md.RegFC(x[53]))
+  la(x, md.RegFC(input_layers))
 
-  la(x, md.RegFlat(x[53]))
+  # la(x, md.RegFC(x[50]))
   
-  # la(x, md.RegFlat(x[75]))
+  # la(x, md.RegFC(x[75]))
 
   return x
