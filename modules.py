@@ -98,9 +98,7 @@ def Last(list_input, num_classes, name='bbox'):
 # Regression Modules
 def RegFC(input):
   x = Flatten(input)
-  x = Dense(x, 1024)
-  x = Dense(x, 256)
-  x = Dense(x, 64)
+  x = Dense(x, 32)
   x = Dense(x, 16)
   x = Dense(x, 1)
   return x
