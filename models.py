@@ -145,15 +145,15 @@ def build_yolov7_model(input_layers, num_classes=13):
 
     #  [[102,103,104], 1, IDetect, [nc, anchors]],   # Detect(P3, P4, P5)
   # regression part
-  la(x, md.RegFC(input_layers))
+  # la(x, md.RegFC(input_layers))
 
   # la(x, md.RegFC(x[50]))
   
-  # la(x, md.RegFC(x[75]))
+  la(x, md.RegFC(x[75]))
 
   return x
 
-def build_mondi_model(input_layers, num_classes=13):
+def build_mondi_model(input_layers, mode='auto', filename='auto_mondi'):
   x = []
   # Backbone
   la(x, md.GhostConv(input_layers, 32, 3, 1)) # 0
@@ -171,7 +171,7 @@ def build_mondi_model(input_layers, num_classes=13):
   la(x, md.Concat([x[-1], x[-3], x[-5], x[-6]]))
   la(x, md.GhostConv(x[-1], 256, 1, 1)) # 11
 
-  la(x, md.CBAM(x[-1], 256))
+  la(x, md.cbam_block(x[-1], 256))
 
   la(x, md.MP(x[-1]))
   la(x, md.GhostConv(x[-1], 128, 1, 1))
@@ -187,7 +187,7 @@ def build_mondi_model(input_layers, num_classes=13):
   la(x, md.Concat([x[-1], x[-3], x[-5], x[-6]]))
   la(x, md.GhostConv(x[-1], 512, 1, 1)) # 25
 
-  la(x, md.CBAM(x[-1], 512))
+  la(x, md.cbam_block(x[-1], 512))
 
   la(x, md.MP(x[-1]))
   la(x, md.GhostConv(x[-1], 256, 1, 1))
@@ -203,7 +203,7 @@ def build_mondi_model(input_layers, num_classes=13):
   la(x, md.Concat([x[-1], x[-3], x[-5], x[-6]]))
   la(x, md.GhostConv(x[-1], 1024, 1, 1)) # 39
 
-  la(x, md.CBAM(x[-1], 1024))
+  la(x, md.cbam_block(x[-1], 1024))
 
   la(x, md.MP(x[-1]))  #  [-1, 1, MP, []],
   la(x, md.GhostConv(x[-1], 512, 1, 1))
@@ -289,10 +289,89 @@ def build_mondi_model(input_layers, num_classes=13):
 
     #  [[102,103,104], 1, IDetect, [nc, anchors]],   # Detect(P3, P4, P5)
   # regression part
-  la(x, md.RegFC(input_layers))
+  if mode == 'fc':
+    la(x, md.RegFCMondi(input_layers, fc=True))
+  if mode == 'cnn':
+    la(x, md.RegFCMondi(x[53]))
+  if mode == 'auto':
+    la(x, md.RegFCMondi(x[78]))
 
-  # la(x, md.RegFC(x[50]))
+  return x, filename
+
+def yolov7_regression(input_layers, mode='auto', filename='auto_yolo'):
+  x = []
+  # Backbone
+  la(x, md.Conv(input_layers, 32, 3, 1)) # 0
+
+  la(x, md.Conv(x[-1], 32, 3, 1)) # 1
+  la(x, md.Conv(x[-1], 64, 3, 1))
+
+  la(x, md.Conv(x[-1], 128, 3, 2)) # 3-P2/4
+  if mode=='fc':
+    la(x, md.Flatten(x[-1]))
+    la(x, md.Dense(x[-1], 16))
+
+  if mode=='cnn':
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu'))
+    la(x, tf.keras.layers.MaxPool2D())
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu'))
+    la(x, tf.keras.layers.MaxPool2D())
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu'))
+    la(x, md.Flatten(x[-1]))
+
+  if mode=='auto':
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')) # encoder
+    la(x, tf.keras.layers.MaxPool2D())
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu'))
+    la(x, tf.keras.layers.MaxPool2D())
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu'))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')) # decoder
+    la(x, tf.keras.layers.UpSampling2D())
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu'))
+    la(x, tf.keras.layers.UpSampling2D())
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu'))
+    la(x, md.Flatten(x[-1]))
   
-  # la(x, md.RegFC(x[75]))
+  la(x, md.Dense(x[-1], 4))
+  la(x, md.Dense(x[-1], 1))
+  
+  return x, filename
 
-  return x
+def mondi_regression(input_layers, mode='auto', filename='auto_yolo'):
+  x = []
+  # Backbone
+  la(x, md.GhostConv(input_layers, 32, 3, 1)) # 0
+
+  la(x, md.GhostConv(x[-1], 32, 3, 1)) # 1
+  la(x, md.GhostConv(x[-1], 64, 3, 1))
+
+  la(x, md.GhostConv(x[-1], 128, 3, 2)) # 3-P2/4
+  if mode=='fc':
+    la(x, md.Flatten(x[-1]))
+    la(x, md.Dense(x[-1], 16))
+
+  if mode=='cnn':
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')(x[-1]))
+    la(x, md.Flatten(x[-1]))
+
+  if mode=='auto':
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')(x[-1])) # encoder
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')(x[-1])) # decoder
+    la(x, tf.keras.layers.UpSampling2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.UpSampling2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')(x[-1]))
+    la(x, md.Flatten(x[-1]))
+  
+  la(x, md.Dense(x[-1], 4))
+  la(x, md.Dense(x[-1], 1))
+  
+  return x, filename

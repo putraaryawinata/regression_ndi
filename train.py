@@ -21,7 +21,11 @@ print(f"x_valid shape: {x_valid.shape}")
 print(f"y_valid shape: {y_valid.shape}")
 
 Input = tf.keras.layers.Input(shape=x_train.shape[1:])
-layers = models.build_mondi_model(input_layers=Input)
+
+# adjust the mode and the filename parameter
+# layers, modelname = models.build_mondi_model(input_layers=Input, mode='fc', filename='fc_mondi_1')
+layers, modelname = models.mondi_regression(input_layers=Input, mode='cnn', filename='cnn_mondi_1')
+# layers = models.build_yolov7_model(input_layers=Input)
 
 model = tf.keras.models.Model(Input, layers[-1])
 
@@ -33,11 +37,11 @@ model.compile(optimizer='adam',
               metrics=['mae', rmse_metrics, metrics.R_squared])
 
 print(model.summary())
-saved_best_ckpt = cb.best_ckpt("mondi_fc_cbam")
+saved_best_ckpt = cb.best_ckpt(modelname)
 
 history = model.fit(x_train, y_train, batch_size=16, epochs=500,
                     validation_data=(x_valid, y_valid),
                     callbacks=[cb.early_stopping, saved_best_ckpt])
 
-metrics.dict_to_json(history.history, file_name="fc_mondi_cbam")
-model.save('fc_mondi_cbam_regression.h5')
+metrics.dict_to_json(history.history, file_name=modelname)
+model.save(f'{modelname}_regression.h5')

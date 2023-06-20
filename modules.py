@@ -23,37 +23,122 @@ def GhostConv(input, filter, kernel_size=1, stride=1, ratio=2, dw_size=3, act='r
   # return out
 
 def channel_attention_module(input, filter, ratio=8):
-  avgpool = tf.keras.layers.GlobalAvgPool2D()(input)
-  maxpool = tf.keras.layers.GlobalMaxPool2D()(input)
+  pool = input.get_shape()[1:-1]
+  avgpool = tf.keras.layers.AvgPool2D(pool)(input)
+  maxpool = tf.keras.layers.MaxPool2D(pool)(input)
   
-  mlp1 = tf.keras.layers.Dense(filter//ratio, activation='relu')(avgpool)
+  mlp1 = tf.keras.layers.Dense(filter//ratio)(avgpool)
   mlp1 = tf.keras.layers.Dense(filter)(mlp1)
 
-  mlp2 = tf.keras.layers.Dense(filter//ratio, activation='relu')(maxpool)
+  mlp2 = tf.keras.layers.Dense(filter//ratio)(maxpool)
   mlp2 = tf.keras.layers.Dense(filter)(mlp2)
 
-  mlp = tf.keras.layers.Add()([mlp1, mlp2])
-  mlp = tf.keras.layers.Reshape((1, 1, filter))(mlp)
-  # mlp = tf.keras.layers.Concatenate()([mlp, mlp])
+  mlp = mlp1 + mlp2 # tf.keras.layers.Add(activation='relu)([mlp1, mlp2])
+  mlp = tf.nn.relu(mlp)
   return input * mlp # tf.keras.layers.Multiply()([input, mlp])
 
 def spatial_attention_module(input, kernel_size=7):
-  avgpool = tf.keras.layers.GlobalAveragePooling2D()(input)
-  maxpool = tf.keras.layers.GlobalMaxPooling2D()(input)
+  pool = input.get_shape()[1:-1]
+  avgpool = tf.keras.layers.AvgPool2D(pool)(input)
+  maxpool = tf.keras.layers.MaxPool2D(pool)(input)
   x = Concat([avgpool, maxpool])
-  # x = tf.expand_dims(x, axis=1)
-  # x = tf.expand_dims(x, axis=1)
   x = tf.keras.layers.Conv2D(1, padding='same', use_bias=False,
                              kernel_size=kernel_size,
-                             activation='sigmoid')(x)
+                             #activation='sigmoid'
+                             )(x)
   # x = tf.keras.layers.Concatenate()([x, x])
   
-  return tf.keras.layers.Multiply()([input, x])
+  return input * x # tf.keras.layers.Multiply()([input, x])
 
-def CBAM(input, filter):
+def cbam_block(input, filter):
   cam = channel_attention_module(input, filter=filter)
   sam = spatial_attention_module(cam)
   return sam
+
+# def cbam_block(input_feature, name='cbam', ratio=8):
+#   """Contains the implementation of Convolutional Block Attention Module(CBAM) block.
+#   As described in https://arxiv.org/abs/1807.06521.
+#   """
+  
+#   # with tf.variable_scope(name):
+#   attention_feature = channel_attention(input_feature, ratio)# 'ch_at', ratio)
+#   attention_feature = spatial_attention(attention_feature) # 'sp_at')
+#   # print ("CBAM Hello")
+#   return attention_feature
+
+# def channel_attention(input_feature, ratio=8):
+  
+#   # kernel_initializer = tf.contrib.layers.variance_scaling_initializer()
+#   # bias_initializer = tf.constant_initializer(value=0.0)
+  
+#   # with tf.variable_scope(name):
+    
+#   channel = input_feature.get_shape()[-1]
+#   avg_pool = tf.reduce_mean(input_feature, axis=[1,2], keepdims=True)
+      
+#   assert avg_pool.get_shape()[1:] == (1,1,channel)
+#   avg_pool = tf.keras.layers.Dense(# inputs=avg_pool,
+#                                 units=channel//ratio,
+#                                 activation=tf.nn.relu,
+#                                 # kernel_initializer=kernel_initializer,
+#                                 # bias_initializer=bias_initializer,
+#                                 name='mlp_0',
+#                                 # reuse=None,
+#                                 )   
+#   assert avg_pool.get_shape()[1:] == (1,1,channel//ratio)
+#   avg_pool = tf.layers.Dense(# inputs=avg_pool,
+#                                 units=channel,                             
+#                                 # kernel_initializer=kernel_initializer,
+#                                 # bias_initializer=bias_initializer,
+#                                 name='mlp_1',
+#                                 # reuse=None,
+#                                 )    
+#   assert avg_pool.get_shape()[1:] == (1,1,channel)
+
+#   max_pool = tf.reduce_max(input_feature, axis=[1,2], keepdims=True)    
+#   assert max_pool.get_shape()[1:] == (1,1,channel)
+#   max_pool = tf.layers.Dense(# inputs=max_pool,
+#                                 units=channel//ratio,
+#                                 activation=tf.nn.relu,
+#                                 name='mlp_0',
+#                                 # reuse=True
+#                                 )   
+#   assert max_pool.get_shape()[1:] == (1,1,channel//ratio)
+#   max_pool = tf.layers.Dense(# inputs=max_pool,
+#                                 units=channel,                             
+#                                 name='mlp_1',
+#                                 # reuse=True
+#                                 )  
+#   assert max_pool.get_shape()[1:] == (1,1,channel)
+
+#   scale = tf.sigmoid(avg_pool + max_pool, 'sigmoid')
+    
+#   return input_feature * scale
+
+# def spatial_attention(input_feature):
+#   kernel_size = 7
+#   # kernel_initializer = tf.contrib.layers.variance_scaling_initializer()
+#   # with tf.variable_scope(name):
+#   avg_pool = tf.reduce_mean(input_feature, axis=[3], keepdims=True)
+#   assert avg_pool.get_shape()[-1] == 1
+#   max_pool = tf.reduce_max(input_feature, axis=[3], keepdims=True)
+#   assert max_pool.get_shape()[-1] == 1
+#   concat = tf.concat([avg_pool,max_pool], 3)
+#   assert concat.get_shape()[-1] == 2
+  
+#   concat = tf.keras.layers.Conv2D(concat,
+#                             filters=1,
+#                             kernel_size=[kernel_size,kernel_size],
+#                             strides=[1,1],
+#                             padding="same",
+#                             activation=None,
+#                             # kernel_initializer=kernel_initializer,
+#                             use_bias=False,
+#                             name='conv')
+#   assert concat.get_shape()[-1] == 1
+#   concat = tf.sigmoid(concat, 'sigmoid')
+    
+#   return input_feature * concat
 
 def Concat(list_layer, axis=-1):
   return tf.keras.layers.Concatenate(axis=axis)(list_layer)
@@ -100,6 +185,22 @@ def RegFC(input):
   x = Flatten(input)
   x = Dense(x, 32)
   x = Dense(x, 16)
+  x = Dense(x, 1)
+  return x
+
+def RegFCMondi(input, fc=False):
+  x = Dense(input, 64)
+  x = Flatten(x)
+  
+  if fc:
+    x = Dense(input, 128)
+    x = Dense(x, 64)
+    x = Flatten(x)
+    x = Dense(x, 64)
+
+  # x = Dense(x, 64)
+  x = Dense(x, 16)
+  x = Dense(x, 4)
   x = Dense(x, 1)
   return x
 
