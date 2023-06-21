@@ -24,7 +24,7 @@ Input = tf.keras.layers.Input(shape=x_train.shape[1:])
 
 # adjust the mode and the filename parameter
 # layers, modelname = models.build_mondi_model(input_layers=Input, mode='fc', filename='fc_mondi_1')
-layers, modelname = models.mondi_regression(input_layers=Input, mode='auto', filename='auto_mondi_1')
+layers, modelname = models.yolov7_regression(input_layers=Input, mode='auto', filename='auto_yolov7_1')
 # layers = models.build_yolov7_model(input_layers=Input)
 
 model = tf.keras.models.Model(Input, layers[-1])

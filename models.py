@@ -312,24 +312,24 @@ def yolov7_regression(input_layers, mode='auto', filename='auto_yolo'):
     la(x, md.Dense(x[-1], 16))
 
   if mode=='cnn':
-    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu'))
-    la(x, tf.keras.layers.MaxPool2D())
-    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu'))
-    la(x, tf.keras.layers.MaxPool2D())
-    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu'))
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')(x[-1]))
     la(x, md.Flatten(x[-1]))
 
   if mode=='auto':
-    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')) # encoder
-    la(x, tf.keras.layers.MaxPool2D())
-    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu'))
-    la(x, tf.keras.layers.MaxPool2D())
-    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu'))
-    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')) # decoder
-    la(x, tf.keras.layers.UpSampling2D())
-    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu'))
-    la(x, tf.keras.layers.UpSampling2D())
-    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu'))
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')(x[-1])) # encoder
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.MaxPool2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.Conv2D(512, 3, activation='relu')(x[-1])) # decoder
+    la(x, tf.keras.layers.UpSampling2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(256, 3, activation='relu')(x[-1]))
+    la(x, tf.keras.layers.UpSampling2D()(x[-1]))
+    la(x, tf.keras.layers.Conv2D(128, 3, activation='relu')(x[-1]))
     la(x, md.Flatten(x[-1]))
   
   la(x, md.Dense(x[-1], 4))
