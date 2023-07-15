@@ -9,7 +9,7 @@ y_test = np.load(f"np_data/3.npy")
 print(f"x_test shape: {x_test.shape}")
 print(f"y_test shape: {y_test.shape}")
 
-Input = tf.keras.layers.Input(shape=x_test.shape[1:])
+# Input = tf.keras.layers.Input(shape=x_test.shape[1:])
 # layers = models.build_mondi_model(input_layers=Input)
 
 

@@ -11,8 +11,8 @@ def jsontocsv(namefile):
     df.to_csv(f'{namefile}.csv')
     print(f"{namefile} has been created!")
 
-namefiles = ['autoencoder_mondi', 'autoencoder', 'cnn_mondi',
-             'cnn', 'fc_mondi', 'fc',]
+namefiles = ['fc_yolov7_2',] #'auto_yolov7_1', 'cnn_mondi_1',
+             #'cnn_yolov7_1', 'fc_mondi_1', 'fc_yolov7_1',]
 
 for namef in namefiles:
     jsontocsv(namef)
